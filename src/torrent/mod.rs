@@ -3,13 +3,6 @@ use serde_bytes::ByteBuf;
 use sha1::{Digest, Sha1};
 use std::fmt::Display;
 
-#[allow(unused)]
-macro_rules! log {
-    ( $( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
-    }
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Node(String, i64);
 
@@ -145,42 +138,3 @@ impl Torrent {
     }
 }
 
-fn _render_torrent(torrent: &Torrent) {
-    println!("name:\t\t{}", torrent.info.name);
-    println!("announce:\t{:?}", torrent.announce);
-    if let Some(ans_list) = &torrent.announce_list {
-        println!("announce list:\n");
-        ans_list.iter().for_each(|item| {
-            println!("\t-------------------------");
-            item.iter().for_each(|ans| println!("\t{}", ans))
-        });
-    }
-    if let Some(seeds) = &torrent.httpseeds {
-        println!("Http Seeds:\n");
-        seeds.iter().for_each(|item| println!("\t{}", item));
-    }
-
-    println!("nodes:\t\t{:?}", torrent.nodes);
-    if let Some(al) = &torrent.announce_list {
-        for a in al {
-            println!("announce list:\t{}", a[0]);
-        }
-    }
-    println!("httpseeds:\t{:?}", torrent.httpseeds);
-    println!("creation date:\t{:?}", torrent.creation_date);
-    println!("comment:\t{:?}", torrent.comment);
-    println!("created by:\t{:?}", torrent.created_by);
-    println!("encoding:\t{:?}", torrent.encoding);
-    println!("piece length:\t{:?}", torrent.info.piece_length);
-    println!("private:\t{:?}", torrent.info.private);
-    //println!("root hash:\t{:?}", torrent.info.root_hash);
-    println!("md5sum:\t\t{:?}", torrent.info.md5sum);
-    //println!("path:\t\t{:?}", torrent.info.path);
-    if let Some(files) = &torrent.info.files {
-        for f in files {
-            println!("file path:\t{:?}", f.path);
-            println!("file length:\t{}", f.length);
-            println!("file md5sum:\t{:?}", f.md5sum);
-        }
-    }
-}
