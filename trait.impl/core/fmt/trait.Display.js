@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"libdottorrent":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.76.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"struct\" href=\"libdottorrent/struct.Info.html\" title=\"struct libdottorrent::Info\">Info</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
