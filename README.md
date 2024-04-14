@@ -5,3 +5,10 @@
 ```bash
 cargo run --example <path to a torrent file> 
 ```
+
+## run tests
+
+```bash
+cargo test
+```
+
