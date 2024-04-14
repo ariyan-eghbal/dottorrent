@@ -4,15 +4,20 @@ use sha1::{Digest, Sha1};
 use std::fmt::Display;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Node(String, i64);
+struct Node(String, i64);
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidMetaData
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct File {
-    md5sum: Option<String>,
+    pub md5sum: Option<String>,
     /// The path to the file within the torrent structure
-    path: Vec<String>,
+    pub path: Vec<String>,
     /// The total size of the file or files in bytes
-    length: i64,
+    pub length: i64,
 }
 
 #[allow(dead_code)]
@@ -64,53 +69,64 @@ pub struct Torrent {
     // #[serde(default)]
     #[serde(rename = "announce-list")]
     pub announce_list: Option<Vec<Vec<String>>>,
-    // #[serde(default)]
-    #[serde(rename = "creation date")]
-    pub creation_date: Option<i64>,
     #[serde(rename = "comment")]
     pub comment: Option<String>,
     // #[serde(default)]
     #[serde(rename = "created by")]
     pub created_by: Option<String>,
     // #[serde(default)]
+    #[serde(rename = "creation date")]
+    pub creation_date: Option<i64>,
+    // #[serde(default)]
     pub encoding: Option<String>,
     /// Bittorrent file format: Info dictionary
     pub info: Info,
-    /// Bittorrent file format Ext(5): DHT Nodes
-    #[serde(default)]
-    pub nodes: Option<Vec<Node>>,
-    /// A list of HTTP seed URLs for direct file downloading.
-    #[serde(default)]
-    pub httpseeds: Option<Vec<String>>,
+    // / Bittorrent file format Ext(5): DHT Nodes
+    //#[serde(default)]
+    //pub nodes: Option<Vec<Node>>,
+    // / A list of HTTP seed URLs for direct file downloading.
+    //#[serde(default)]
+    //pub httpseeds: Option<Vec<String>>,
 }
 
 impl Torrent {
-    pub fn total_size(&self) -> u128 {
-        if let Some(files) = &self.info.files {
-            files.iter().fold(0u128, |acc, v| acc + v.length as u128)
-        } else if let Some(length) = self.info.length {
-            length as u128
+    pub fn size(&self) -> Result<u128, Error> {
+        // Single file 
+        if let Some(length) = self.info.length {
+            Ok(length as u128)
+        // Multi file 
+        } else if let Some(files) = &self.info.files {
+            Ok(files.iter().fold(0u128, |acc, v| acc + v.length as u128))
         } else {
-            0u128
+            Err(Error::InvalidMetaData)
         }
     }
 
-    pub fn files_count(&self) -> usize {
-        if let Some(files) = &self.info.files {
-            files.len()
-        } else if self.info.length.is_some() {
-            1
+    pub fn files_count(&self) -> Result<usize, Error> {
+        if self.info.length.is_some() {
+            Ok(1)
+        } else if let Some(files) = &self.info.files {
+            Ok(files.len())
         } else {
-            0
+            Err(Error::InvalidMetaData)
         }
     }
 
     pub fn pieces_count(&self) -> usize {
         self.info.pieces.len() / 20
     }
+    
+    pub fn pieces_hashes(&self) -> Result<Vec<&[u8]>, Error> {
+        if self.info.pieces.len() % 20 != 0 {
+            Err(Error::InvalidMetaData)
+        }else{
+            let chunks: Vec<&[u8]> = self.info.pieces.chunks(20).collect();
+            Ok(chunks)
+        }
+    }
 
     pub fn is_single(&self) -> bool {
-        self.info.files.is_some()
+        self.info.length.is_some()
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Torrent, serde_bencode::Error> {

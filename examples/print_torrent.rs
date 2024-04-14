@@ -29,8 +29,8 @@ fn main() {
         match Torrent::from_bytes(&buffer) {
             Ok(t) => {
                 println!("\tName: {}", t.info.name);
-                println!("\tNumber of files: {}", t.files_count());
-                let size = t.total_size();
+                println!("\tNumber of files: {}", t.files_count().unwrap());
+                let size = t.size().unwrap();
                 println!(
                     "\tSize: {} B ({})",
                     size,
